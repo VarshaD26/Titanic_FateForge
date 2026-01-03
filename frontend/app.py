@@ -3,6 +3,7 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 
+# ---------------- KAFKA (OPTIONAL) ----------------
 try:
     from kafka import KafkaConsumer
     KAFKA_AVAILABLE = True
@@ -11,7 +12,8 @@ except Exception:
 
 # ---------------- PATH ----------------
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.append(ROOT)
+if ROOT not in sys.path:
+    sys.path.append(ROOT)
 
 from backend.predictor import SurvivalPredictor
 
@@ -38,8 +40,10 @@ def load_data():
 predictor = load_model()
 df = load_data()
 
-#  SIDEBAR – GLOBAL CONTROLS
-st.sidebar.markdown("## Global Controls")
+# ==================================================
+# 🧭 SIDEBAR – GLOBAL CONTROLS
+# ==================================================
+st.sidebar.markdown("## ⚙️ Global Controls")
 
 threshold = st.sidebar.slider(
     "Classification Threshold",
@@ -51,15 +55,19 @@ show_advanced = st.sidebar.checkbox("Show Advanced Model Insights")
 st.sidebar.divider()
 st.sidebar.caption("Titanic Survival Intelligence v1.1")
 
-#  HEADER
+# ==================================================
+# 🧠 HEADER
+# ==================================================
 st.markdown("""
 <div class="header-card">
-  <h1> Titanic Survival Intelligence</h1>
+  <h1>🚢 Titanic Survival Intelligence</h1>
   <p>A machine learning platform for survival prediction & analytics</p>
 </div>
 """, unsafe_allow_html=True)
 
-# PASSENGER FILTERS
+# ==================================================
+# 🎛 PASSENGER FILTERS
+# ==================================================
 st.markdown("## Passenger Filters")
 
 f1, f2, f3, f4 = st.columns([1.2, 1.8, 1.2, 1.8])
@@ -83,9 +91,15 @@ filtered = df[
     (df["Fare"] <= max_fare)
 ].copy()
 
-probs, preds, risks = predictor.predict(filtered)
+# 🔐 SAFE PREDICTION (CRITICAL FIX)
+if filtered.shape[0] > 0:
+    probs, preds, risks = predictor.predict(filtered)
+else:
+    probs, preds, risks = [], [], []
 
-# KPI CARDS
+# ==================================================
+# 📊 KPI CARDS
+# ==================================================
 st.markdown("## Intelligence KPIs")
 
 k1, k2, k3, k4 = st.columns(4)
@@ -99,11 +113,16 @@ def kpi(title, value):
     """
 
 k1.markdown(kpi("Passengers", len(filtered)), unsafe_allow_html=True)
-k2.markdown(kpi("Avg Survival", f"{probs.mean():.2%}" if len(probs) else "—"), unsafe_allow_html=True)
-k3.markdown(kpi("High Risk", int((risks > 60).sum())), unsafe_allow_html=True)
+k2.markdown(
+    kpi("Avg Survival", f"{sum(probs)/len(probs):.2%}" if len(probs) else "—"),
+    unsafe_allow_html=True
+)
+k3.markdown(kpi("High Risk", int(sum(r > 60 for r in risks))), unsafe_allow_html=True)
 k4.markdown(kpi("Model ROC-AUC", "0.91"), unsafe_allow_html=True)
 
-# BATCH PREDICTIONS
+# ==================================================
+# 📋 BATCH PREDICTIONS
+# ==================================================
 st.markdown("## Batch Survival Predictions")
 
 s1, s2 = st.columns([2, 1])
@@ -117,7 +136,7 @@ with s1:
 with s2:
     order = st.radio("Order", ["Descending", "Ascending"], horizontal=True)
 
-if len(filtered):
+if filtered.shape[0] > 0:
     filtered["Survival Probability"] = probs
     filtered["Risk Score"] = risks
     filtered["Prediction"] = preds
@@ -138,7 +157,9 @@ if len(filtered):
 else:
     st.warning("No passengers match the selected filters.")
 
-# INDIVIDUAL PREDICTION
+# ==================================================
+# 🔮 INDIVIDUAL PREDICTION (ALWAYS SAFE)
+# ==================================================
 st.markdown("## Individual Passenger Prediction")
 
 i1, i2, i3 = st.columns(3)
@@ -170,35 +191,43 @@ o1, o2, o3 = st.columns(3)
 
 o1.markdown(kpi("Survival Probability", f"{p[0]:.2%}"), unsafe_allow_html=True)
 o2.markdown(kpi("Risk Index", f"{r[0]}/100"), unsafe_allow_html=True)
-o3.markdown(kpi("Prediction", "Survived" if pr[0] else "Did Not Survive"), unsafe_allow_html=True)
+o3.markdown(
+    kpi("Prediction", "Survived" if pr[0] == 1 else "Did Not Survive"),
+    unsafe_allow_html=True
+)
 
 st.progress(int(p[0] * 100))
 
-# ANALYTICS
+# ==================================================
+# 📈 ANALYTICS (SAFE)
+# ==================================================
 st.markdown("## Analytics Overview")
 
-c1, c2 = st.columns(2)
+if len(probs) > 0:
+    c1, c2 = st.columns(2)
 
-with c1:
-    fig1 = px.histogram(
-        probs, nbins=20,
-        title="Survival Probability Distribution",
-        template="plotly_dark"
-    )
-    fig1.update_layout(height=300)
-    st.plotly_chart(fig1, use_container_width=True)
+    with c1:
+        fig1 = px.histogram(
+            probs, nbins=20,
+            title="Survival Probability Distribution"
+        )
+        fig1.update_layout(height=300)
+        st.plotly_chart(fig1, use_container_width=True)
 
-with c2:
-    fig2 = px.histogram(
-        risks, nbins=20,
-        title="Risk Score Distribution",
-        template="plotly_dark"
-    )
-    fig2.update_layout(height=300)
-    st.plotly_chart(fig2, use_container_width=True)
+    with c2:
+        fig2 = px.histogram(
+            risks, nbins=20,
+            title="Risk Score Distribution"
+        )
+        fig2.update_layout(height=300)
+        st.plotly_chart(fig2, use_container_width=True)
+else:
+    st.info("Analytics unavailable — no passengers after filtering.")
 
-# REAL-TIME KAFKA PREDICTIONS
-st.markdown("## Real-Time Kafka Predictions")
+# ==================================================
+# 🔴 REAL-TIME KAFKA PREDICTIONS
+# ==================================================
+st.markdown("## 🔴 Real-Time Kafka Predictions")
 
 if not KAFKA_AVAILABLE:
     st.info("Kafka client not available. Streaming disabled.")
@@ -225,12 +254,8 @@ else:
                     "Survived" if preds_live[0] == 1 else "Did Not Survive"
                 )
 
-                st.dataframe(
-                    live_row,
-                    height=120,
-                    width="stretch"
-                )
+                st.dataframe(live_row, height=120, width="stretch")
                 break
 
-        except Exception as e:
+        except Exception:
             st.error("Kafka broker not running. Start Kafka + Zookeeper.")
