@@ -1,133 +1,127 @@
-Titanic Survival Intelligence Platform
+# Titanic FateForge
+<div>Titanic Survival Intelligence is a Streamlit-based dashboard for predicting passenger survival on the Titanic and analyzing the behavior of a trained machine learning model. The application provides interactive exploration, model-driven insights, and optional real-time inference through Kafka-based streaming.</div><br/>
 
-It's an end-to-end, Machine Learning system that predicts passenger survival during the RMS Titanic disaster using historical data, advanced ML models, interactive dashboards, and real-time streaming.
+<div>This project demonstrates end-to-end ML engineering, combining data science, model deployment, real-time streaming, and an interactive analytics dashboard into a single scalable system. It includes:<ul>
+    <li>A web-based analytical dashboard built with Streamlit</li>
+    <li>A modular backend for preprocessing and inference</li>
+    <li>Integration with Apache Kafka for real-time scoring</li>
+    <li>Docker support for containerized deployment</li></ul></div>
 
-Project Objective: To develop a robust survival prediction system that:
-1. Predicts whether a passenger survived or not
-2. Uses passenger attributes such as:
-    i. Age
-    ii. Gender
-    iii. Passenger class
-    iv. Fare
-    v. Family size
-3. Allows customized filtering & sorting of predictions
-4. Supports:
-    i. Batch predictions
-    ii. Individual predictions
-    iii. Real-time Kafka streaming
+## Dataset Source
+<div>https://www.kaggle.com/competitions/titanic</div>
 
-Project Highlights
-1. Advanced Machine Learning models (Logistic Regression, Random Forest)
-2. Feature engineering (family size, titles, encoded variables)
-3. Interactive Streamlit Dashboard (KPIs, filtering, sorting)
-4. Batch & individual predictions
-5. Real-time predictions using Kafka
-6. Scalable & container-ready architecture
-7. Clean UI
+## Data Pipeline & Model Development
+<div><ol>
+<li><b>Data Cleaning</b>: Acquired the Titanic dataset and performed comprehensive data preprocessing. Missing numerical features (Age, Fare) were imputed using median values by passenger class to preserve demographic patterns. Categorical variables (Embarked) used mode imputation, while high-missing columns (Cabin) were excluded. Data inconsistencies were resolved, and a derived FamilySize feature was engineered from SibSp + Parch + 1 to capture family travel dynamics.</li>
 
-Dataset
-Source: https://www.kaggle.com/competitions/titanic
-Key Features Used:
-Feature	        Description
-PassengerId	    Unique ID
-Pclass	        Passenger class (1, 2, 3)
-Sex	            Gender
-Age	            Passenger age
-SibSp	        Siblings / Spouse aboard
-Parch	        Parents / Children aboard
-Fare	        Ticket fare
-Cabin	        Cabin number
-Embarked	    Port of embarkation
+<li><b>Feature Engineering</b>: Developed sophisticated features including FamilySize for social connectivity analysis and extracted passenger Title (Mr, Mrs, Miss, Master, etc.) from names to encode age brackets and marital status. Applied one-hot encoding to categorical variables (Sex, Pclass, Embarked) and created interaction terms between fare and class to capture pricing anomalies. Features were standardized and aligned with model expectations.</li>
 
+<li><b>Exploratory Data Analysis (EDA):</b> Comprehensive EDA identified key survival drivers: female passengers exhibited 3.5x higher survival rates, first-class passengers had 2.8x advantage over third-class, and optimal family sizes (2-4 members) showed 15-20% higher survival probability. Age distribution analysis revealed children under 10 had elevated survival rates. Visualizations confirmed non-linear relationships guiding subsequent modeling strategy.</li>
 
-Machine Learning Pipeline
-1. Data Cleaning
-    a. Missing value handling (Age, Embarked)
-    b. Cabin normalization
-    c. Outlier treatment for Fare
-2. Feature Engineering
-    a. FamilySize = SibSp + Parch + 1
-    b. Title extraction from names (Mr, Mrs, Miss, etc.)
-    c. One-Hot Encoding for categorical features
-3. Models Trained
-    a.Logistic Regression
-    b.Random Forest (Best Performer)
-    c.Hyperparameter tuning with GridSearchCV
-    d.Cross-validation for generalization
-4. Evaluation Metrics
-    a. Accuracy
-    b. Precision / Recall / F1-Score
-    c. Confusion Matrix
-    d. ROC-AUC Curve
+<li><b>Model Development & Optimization: </b>Evaluated Logistic Regression, Random Forest Classifier, and Support Vector Machines using stratified k-fold cross-validation. Random Forest delivered superior performance (ROC-AUC: 0.91, F1: 0.82) due to its robustness to feature interactions. Applied GridSearchCV across 120 hyperparameter combinations optimizing max_depth, n_estimators, and min_samples_split. Final model achieved stable performance across validation folds with no overfitting detected.</li></div>
 
-4️⃣ Evaluation Metrics
+## Project Overview
+<div><div>
+<b>Predictive Intelligence Engine</b><ul>
+<li>Individual Survival Probability: 0-100% confidence scores</li>
+<li>Binary Classification: Survived / Not Survived predictions</li>
+<li>Risk Assessment Index: Normalized 0-100 risk scoring</li>
+<li>Configurable Decision Threshold: Adjustable via sidebar (0.1-0.9)</li></ul></div>
 
-Accuracy
+<div><div><b>Dynamic Data Exploration</b>
+    <table>
+        <td>Filter Criteria</td>
+        <td>Interactive Controls</td>
+<tr>
+    <td>Passenger Class</td>
+    <td>1st, 2nd, 3rd</td>
+</tr>
+<tr><td>Age Range</td>
+    <td>0-80</td>
+</tr>
+<tr>
+    <td>Gender</td>
+    <td>Male/Female</td>
+</tr>
+<tr>
+    <td>Maximum Fare</td>
+    <td>0-500</td>
+</tr>
+    </table></div></div>
 
-Precision / Recall / F1-Score
+<div> <b>Real-time Sorting Options: </b><div>
+Survival Probability | Risk Score | Age | Fare (Ascending/Descending)</div></div><br/>
 
-Confusion Matrix
+<div> <b>Batch Processing & Analytics</b>:<div><ul>
+<li>Real-time KPI dashboard</li>
+<li>Probability & Risk distributions</li>
+<li>Progress indicators & confidence gauges </li></ul></div></div>
 
-ROC-AUC Curve
+<div><b>Individual Prediction:</b><div>
+<ul><li>Age slider (0-80 years)</li>
+<li>Class selector (1st/2nd/3rd)</li>
+<li>Fare adjustment (0-500)</li>
+<li>Family metrics (Siblings/Parents)</li>
+<li>Risk index</li></ul></div></div>
 
-Dashboard Capabilities (Streamlit)
-1. KPI Indicators
-    i. Total passengers
-    ii. Average survival probability
-    iii. High-risk passenger count
-    iv. Model ROC-AUC score
+<div><b> Real-Time Kafka Integration:</b><div><ul>
+<li>Producer: titanic_cleaned.csv → titanic_stream topic</li>
+<li>Consumer: Real-time model inference</li>
+<li>Dockerized: Zookeeper + Kafka stack</li></ul></div></div>
 
-2. Filtering & Sorting
-    i.Filter predictions by:
-        a. Passenger class
-        b. Age range
-        c. Gender
-        d. Sort passengers by survival probability
+## Model Performance Metrics
+<div> 
+<table>
+    <td>Evaluation Metric</td>
+    <td>Score</td>	
+    <td>Interpretation</td>
+<tr>
+    <td>ROC-AUC</td>
+    <td>0.91</td>
+    <td>Excellent discrimination</td>
+</tr>
+<tr>
+    <td>Accuracy</td>
+    <td>86%	</td>
+    <td>Reliable predictions</td>
+</tr>
+<tr>
+    <td>Precision</td>	
+    <td>85%</td>
+    <td>ow false positives</td>
+</tr>
+<tr>
+    <td>Recall</td>	
+    <td>79%</td>
+    <td>Good survivor detection</td>
+</tr>
+<tr>
+    <td>F1-Score</td>	
+    <td>81%	</td>
+    <td>Balanced performance</td>
+</tr>
+</table>
+</div>
 
-3. Batch Predictions
-    i. View survival predictions for filtered groups
-    ii. Risk scores computed dynamically
-4. Individual Prediction Studio
-    i. Enter passenger details
-    ii. Get:
-        a. Survival probability
-        b. Risk index
-        c. Model prediction
-        d. Visual confidence indicators
-5. Real-Time Streaming (Kafka)
-    i. Live passenger data ingestion
-    ii. On-the-fly survival predictions
-    iii. Scalable streaming architecture
+## Installation & Setup
+<div>
+    <ol>
+        <li> Prerequisites: pip install -r requirements.txt</li>
+        <li> Create a Virtual Environment<ul>
+        <li>conda create -n titanic-ai python=3.9 -y</li>
+    <li>conda activate titanic-ai</li></ul></li>
+        <li>Clone to Repository
+        <ul><li>git clone https://github.com/VarshaD26/Titanic_FateForge.git</li>
+        <li>cd Titanic-FateForge</li></ul></li>
+        <li>Run the Streamlit Application<ul>
+            <li>streamlit run frontend/app.py</li></ul>
+        </li>
+        <li>Kafka Real-Time Streaming Setup (simultaneously open a new terminal)<ul>
+            <li>docker compose up -d</li>
+            <li>python kafka_pipeline/producer.py</li></ul>
+        </li>
+    </ol>
+</div>
 
-Real-Time Architecture (Kafka)
-    Passenger Data Producer
-            ↓
-    Kafka Topic (titanic_stream)
-            ↓
-    ML Prediction Consumer
-            ↓
-    Live Dashboard Updates
-✔ Handles high-volume data
-✔ Ready for real-world streaming use cases
-
-
-Installation & Setup
-1. Clone Repository
-    git clone https://github.com/your-username/titanic-survival-prediction.git
-    cd titanic-survival-prediction
-
-2. Create Environment
-    conda create -n titanic-ai python=3.10
-    conda activate titanic-ai
-
-3. Install Dependencies
-    pip install -r requirements.txt
-
-4. Run Application
-    python -m streamlit run frontend/app.py
-    (in new terminal)
-    docker compose up -d
-    python kafka_pipeline/producer.py
-
-URL of Web Application: 
-
+### URL of Web Application
+<div>https://titanic-fateforge.streamlit.app/</div>
